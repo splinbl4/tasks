@@ -16,30 +16,29 @@ function imageresize($outfile,$infile,$neww,$newh,$quality) {
     imagedestroy($im1);
 }
 
-if (isset($_POST['submit'])) {
-    $file = $_FILES['file'];
-    $uploaddirmax = 'photo_max/';
-    $uploaddirmin = 'photo_min/';
-    $filename = $file['name'];
-    $uploadfilemax = $uploaddirmax . basename($filename);
-    if (preg_match('/jpg/', $filename)
-        or preg_match('/png/', $filename)
-        or preg_match('/gif/', $filename)
-        or preg_match('/jpeg/', $filename)) {
-        if (preg_match('/jpg/', $file['type'])
-            or preg_match('/png/', $file['type'])
-            or preg_match('/gif/', $file['type'])
-            or preg_match('/jpeg/', $file['type'])) {
-            $filemax = move_uploaded_file($file['tmp_name'], $uploadfilemax);
-        }
-        if (isset($filemax)) {
-            $uploadfilemin = $uploaddirmin . basename($filename);
-            copy($uploadfilemax, $uploadfilemin);
-            imageresize($uploadfilemin, $uploadfilemax, 200, 200, 75);
-        }
-    } else {
-        echo 'Неверный формат файла';
+
+$file = $_FILES['file'];
+$filename = $file['name'];
+
+$whitelist = ['gif','jpg', 'png', 'jpeg'];
+$extension = strtolower(end(explode(".", $filename)));
+
+$uploaddirmax = 'photo_max/';
+$uploaddirmin = 'photo_min/';
+
+$uploadfilemax = $uploaddirmax . basename($filename);
+$uploadfilemin = $uploaddirmin . basename($filename);
+
+if (in_array($extension, $whitelist)) {
+    if (move_uploaded_file($file['tmp_name'], $uploadfilemax)) {
+        copy($uploadfilemax, $uploadfilemin);
+        imageresize($uploadfilemin, $uploadfilemax, 200, 200, 75);
+        echo 'Файл ' . $filename . ' успешно загружен!<br>';
     }
+} elseif ($filename == '') {
+    echo 'Выберите файл';
+} else {
+    echo 'Недопустимый тип файла.';
 }
 ?>
 
@@ -48,3 +47,7 @@ if (isset($_POST['submit'])) {
     <input name="file" type="file">
     <button name="submit" type="submit">Загрузить</button><br><br>
 </form>
+<?php
+if (glob('photo_min/*')) {
+    echo '<a href="view_image.php">Просмотреть изображения</a><br>';
+}
