@@ -1,4 +1,7 @@
 <?php
+require_once 'db.php';
+define('ROOT', dirname(__FILE__));
+
 function imageresize($outfile,$infile,$neww,$newh,$quality) {
     $im=imagecreatefromjpeg($infile);
     $k1=$neww/imagesx($im);
@@ -22,15 +25,27 @@ $filename = $file['name'];
 
 $whitelist = ['gif','jpg', 'png', 'jpeg'];
 $extension = strtolower(end(explode(".", $filename)));
+$newname = uniqid();
 
 $uploaddirmax = 'photo_max/';
 $uploaddirmin = 'photo_min/';
 
-$uploadfilemax = $uploaddirmax . basename($filename);
-$uploadfilemin = $uploaddirmin . basename($filename);
+$uploadfilemax = $uploaddirmax . $newname .'.'. $extension;
+$uploadfilemin = $uploaddirmin . $newname .'.'. $extension;
 
 if (in_array($extension, $whitelist)) {
     if (move_uploaded_file($file['tmp_name'], $uploadfilemax)) {
+        $db = getConnection();
+
+        $sql = 'INSERT INTO photo (name, type) VALUES (:name, :type)';
+
+        $result = $db->prepare($sql);
+        $result->bindParam(':name', $newname, PDO::PARAM_STR);
+        $result->bindParam(':type', $extension, PDO::PARAM_STR);
+
+        $result->execute();
+
+
         copy($uploadfilemax, $uploadfilemin);
         imageresize($uploadfilemin, $uploadfilemax, 200, 200, 75);
         echo 'Файл ' . $filename . ' успешно загружен!<br>';
@@ -42,11 +57,11 @@ if (in_array($extension, $whitelist)) {
 }
 ?>
 
-<form method="POST" enctype = "multipart/form-data">
-    <label>Загрузить фото:</label><br>
-    <input name="file" type="file">
-    <button name="submit" type="submit">Загрузить</button><br><br>
-</form>
+    <form method="POST" enctype = "multipart/form-data">
+        <label>Загрузить фото:</label><br>
+        <input name="file" type="file">
+        <button name="submit" type="submit">Загрузить</button><br><br>
+    </form>
 <?php
 if (glob('photo_min/*')) {
     echo '<a href="image_list.php">Просмотреть изображения</a><br>';

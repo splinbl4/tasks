@@ -8,5 +8,5 @@ foreach (glob('photo_max/*') as $img) {
 }
 ?>
 
-<a href="view_image.php">Вернуться к списку изображений</a><br>
+<a href="image_list.php">Вернуться к списку изображений</a><br>
 <a href="index.php">Загрузить еще изображения</a><br>

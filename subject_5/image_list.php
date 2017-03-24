@@ -3,7 +3,7 @@
 <?php
 foreach (glob('photo_min/*') as $img) {
     $img_name = end(explode("/", $img));
-    echo '<a href="img.php?var='.$img_name.'"><img src="'.$img.'" /></a><br><br>';
+    echo '<a href="image_view.php?var='.$img_name.'"><img src="'.$img.'" /></a><br><br>';
 }
 ?>
 
